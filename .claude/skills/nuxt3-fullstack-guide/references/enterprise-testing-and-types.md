@@ -1248,9 +1248,10 @@ describe('calculateFinalPrice', () => {
     expect(calculateFinalPrice(100, 1.5, 0.1)).toBe(0)
   })
 
-  it('剛好為 0 不觸發下限保護', () => {
-    // 殺死 < 被改成 <= 的變異
-    expect(calculateFinalPrice(100, 1, 0)).toBe(0)
+  it('極小正數不觸發下限保護', () => {
+    // 殺死 < 被改成 <= 的變異：price=0.5 時原始 0.5<0 為 false 回傳 1，變異 0.5<=0 為 false 也回傳 1 — 等價變異
+    // 改用 discount=0.995 使 price=0.5，Math.round(0.5)=1 vs 下限 0 來驗證正數不被截斷
+    expect(calculateFinalPrice(100, 0.995, 0)).toBe(1) // Math.round(0.5) = 1
   })
 })
 ```

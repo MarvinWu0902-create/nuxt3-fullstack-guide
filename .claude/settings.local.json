@@ -15,7 +15,9 @@
       "WebFetch(domain:pinia.vuejs.org)",
       "WebFetch(domain:github.com)",
       "Bash(wc:*)",
-      "WebFetch(domain:hub.nuxt.com)"
+      "WebFetch(domain:hub.nuxt.com)",
+      "Bash(git -C:*)",
+      "Bash(cmdkey /list:*)"
     ]
   }
 }

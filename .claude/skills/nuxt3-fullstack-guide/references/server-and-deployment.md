@@ -403,7 +403,7 @@ export function useSafeFetch<T>(url: string, opts?: Parameters<typeof $fetch>[1]
 
 ```typescript
 // server/utils/csrf.ts
-import { randomBytes } from 'node:crypto'
+import { randomBytes, timingSafeEqual } from 'node:crypto'
 import type { H3Event } from 'h3'
 
 const CSRF_COOKIE = 'csrf-token'
@@ -433,7 +433,7 @@ export function verifyCsrfToken(event: H3Event): void {
   // 使用 timing-safe 比較防止計時攻擊
   if (!cookieToken || !headerToken
     || Buffer.byteLength(cookieToken) !== Buffer.byteLength(headerToken)
-    || !crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))) {
+    || !timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))) {
     throw createError({
       statusCode: 403,
       message: 'CSRF 驗證失敗：請重新載入頁面後再試'
@@ -3175,15 +3175,15 @@ export default {
 } satisfies SSTConfig
 ```
 
-### Lambda@Edge（SSR at Edge）
+### Lambda + CloudFront（SSR at Edge）
 
-適合需要在邊緣節點執行 SSR 的場景。
+透過 AWS Lambda 搭配 CloudFront 實現邊緣快取的 SSR。Nitro 目前不支援 `aws-lambda-edge` preset，但可以用 `aws-lambda` 搭配 CloudFront 分發達到類似效果：
 
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
   nitro: {
-    preset: 'aws-lambda-edge'
+    preset: 'aws-lambda'
   }
 })
 ```

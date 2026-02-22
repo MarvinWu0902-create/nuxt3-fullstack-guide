@@ -815,7 +815,8 @@ export function useFeatureFlag(flagName: keyof AppConfig['features']) {
 
   // 優先使用 runtime config（環境變數），否則使用 app config
   return computed(() => {
-    return runtimeConfig.public.featureFlags?.[flagName]
+    const flags = runtimeConfig.public.featureFlags as Record<string, boolean> | undefined
+    return flags?.[flagName]
       ?? appConfig.features[flagName]
       ?? false
   })
@@ -1347,7 +1348,7 @@ defineSlots<{
       name="trigger"
       :is-open="isOpen"
       :toggle="toggle"
-      :trigger-ref="(el: HTMLElement | null) => { triggerRef = el }"
+      :trigger-ref="(el: HTMLElement | null) => { triggerRef.value = el }"
       :trigger-props="{
         'aria-expanded': isOpen,
         'aria-haspopup': 'true' as const,
@@ -1360,7 +1361,7 @@ defineSlots<{
       name="content"
       :is-open="isOpen"
       :close="close"
-      :content-ref="(el: HTMLElement | null) => { contentRef = el }"
+      :content-ref="(el: HTMLElement | null) => { contentRef.value = el }"
     />
   </div>
 </template>

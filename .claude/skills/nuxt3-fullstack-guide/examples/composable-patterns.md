@@ -282,12 +282,19 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
 
       // 在讀取 localStorage 之後才註冊 watch，避免 watch 在 onMounted 之前觸發而覆蓋已存的值
       watch(data, (newValue) => {
+        if (skipNextWatch) {
+          skipNextWatch = false
+          return
+        }
         localStorage.setItem(key, JSON.stringify(newValue))
       }, { deep: true })
     })
   }
 
+  let skipNextWatch = false
+
   function remove() {
+    skipNextWatch = true
     data.value = defaultValue
     if (import.meta.client) {
       localStorage.removeItem(key)

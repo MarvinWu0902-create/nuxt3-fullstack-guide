@@ -3044,8 +3044,8 @@ receivers:
 ```typescript
 // server/utils/error-budget-forecast.ts — Error Budget 消耗趨勢預測
 interface BudgetForecast {
-  currentRemaining: number            // 目前剩餘百分比
-  burnRate: number                     // 目前燃燒率
+  currentRemaining: number            // 目前剩餘百分比 (0-100)
+  burnRate: number                     // 目前燃燒率百分比 (0-100+)
   exhaustionDate: Date | null          // 預計耗盡日期
   daysRemaining: number | null         // 距離耗盡天數
   recommendation: string              // 行動建議
@@ -3074,11 +3074,15 @@ export function forecastErrorBudget(
   let exhaustionDate: Date | null = null
   let daysRemaining: number | null = null
 
-  if (burnRate > 1) {
+  if (burnRate >= 1) {
+    // 預算已耗盡
+    daysRemaining = 0
+    exhaustionDate = new Date()
+  } else if (burnRate > 0) {
     // 以線性趨勢預測耗盡時間
     const remainingBudget = errorBudgetTotal - failedRequests30d
     const dailyBurnRate = failedRequests30d / 30
-    daysRemaining = Math.max(0, remainingBudget / dailyBurnRate)
+    daysRemaining = remainingBudget / dailyBurnRate
     exhaustionDate = new Date(Date.now() + daysRemaining * 24 * 60 * 60 * 1000)
   }
 
@@ -3097,7 +3101,7 @@ export function forecastErrorBudget(
 
   return {
     currentRemaining: Math.round(currentRemaining * 10000) / 100,
-    burnRate: Math.round(burnRate * 100) / 100,
+    burnRate: Math.round(burnRate * 10000) / 100,
     exhaustionDate,
     daysRemaining: daysRemaining !== null ? Math.round(daysRemaining * 10) / 10 : null,
     recommendation,

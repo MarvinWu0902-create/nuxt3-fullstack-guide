@@ -155,7 +155,12 @@ export class CircuitBreaker {
   private onFailure(): void {
     this.failureCount++
     this.lastFailureTime = Date.now()
-    if (this.failureCount >= this.options.failureThreshold) this.transitionTo('OPEN')
+    // HALF_OPEN 狀態下任何失敗都應立即回到 OPEN，避免死鎖
+    if (this.state === 'HALF_OPEN') {
+      this.transitionTo('OPEN')
+    } else if (this.failureCount >= this.options.failureThreshold) {
+      this.transitionTo('OPEN')
+    }
   }
   private transitionTo(newState: CircuitState): void {
     const from = this.state
